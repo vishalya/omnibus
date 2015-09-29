@@ -141,13 +141,17 @@ module Omnibus
     #   the level to apply the patch
     # @option options [String] :target
     #   the destination to apply the patch
+    # @option options [Boolean] :forward
+    #   ignore patches that seem to be reversed or already applied.
+
     #
     # @return (see #command)
     #
     def patch(options = {})
-      source = options.delete(:source)
-      plevel = options.delete(:plevel) || 1
-      target = options.delete(:target)
+      source  = options.delete(:source)
+      plevel  = options.delete(:plevel) || 1
+      target  = options.delete(:target)
+      forward = options.delete(:forward) ? '-N' : ''
 
       locations, patch_path = find_file('config/patches', source)
 
@@ -159,9 +163,9 @@ module Omnibus
       patch_path = windows_safe_path(patch_path)
 
       if target
-        command = "cat #{patch_path} | patch -p#{plevel} #{target}"
+        command = "cat #{patch_path} | patch #{forward} -p#{plevel} #{target}"
       else
-        command = "patch -d #{software.project_dir} -p#{plevel} -i #{patch_path}"
+        command = "patch #{forward} -d #{software.project_dir} -p#{plevel} -i #{patch_path}"
       end
 
       patches << patch_path
